@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CAB301_Assignment_3", "CAB301_Assignment_3\CAB301_Assignment_3.csproj", "{78E57C7C-03E9-455F-A89B-6DBABB9D85BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectManagementSystem", "CAB301_Assignment_3\ProjectManagementSystem.csproj", "{78E57C7C-03E9-455F-A89B-6DBABB9D85BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

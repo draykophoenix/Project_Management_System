@@ -1,4 +1,4 @@
-Ask the user to enter the name of a text file in which the information about the tasks in
+• Ask the user to enter the name of a text file in which the information about the tasks in
 a project and the dependencies among the tasks are stored and read the information
 from the text file into the system.
 • Add a new task with time needed to complete the task and other tasks that the task
@@ -21,3 +21,7 @@ T4, 100
 T5, 190
 T6, 260
 T7, 0
+
+TODO:
+- Add error checking for file opening + nulls (reprompt)
+	-Retry with ".txt"
