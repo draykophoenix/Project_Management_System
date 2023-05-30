@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace ProjectManagementSystem
 {
     internal class Task
@@ -23,10 +18,14 @@ namespace ProjectManagementSystem
             _dependencies = dependencies;
         }
 
+        /*
+         Add a new task with time needed to complete the task and other tasks that the task
+         depends on into the project.
+        */
+
         public override string ToString()
         {
             return $"{ID} ({_timeToCompletion})";
         }
-
     }
 }

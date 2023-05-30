@@ -20,10 +20,6 @@ namespace ProjectManagementSystem
             */
             string[] tasksText = File.ReadAllLines(@"C:\Users\drayk\source\repos\Project_Management_System\CAB301_Assignment_3\Tasks.txt"); // {|!|}
 
-            /*
-             Add a new task with time needed to complete the task and other tasks that the task
-             depends on into the project.
-            */
             List<Task> tasks = new List<Task>();
 
             // First loop - init all tasks
@@ -60,7 +56,6 @@ namespace ProjectManagementSystem
 
                 task.Update(timeToCompletion, dependencies);
             }
-
         }
     }
 }
