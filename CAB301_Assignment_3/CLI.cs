@@ -17,7 +17,7 @@ namespace ProjectManagementSystem
             SEQUENCE,
             EARLIESTTIMES
         };
-        private const string TITLE = "================ Project Management System ================";
+        private const string TITLE = "================ Project Management System ================================";
         private const string PAD = "> ";
         private static bool s_isChanged = false;
         public static void IncorrectInput()
@@ -45,7 +45,7 @@ namespace ProjectManagementSystem
             {
                 Console.Clear();
                 Console.WriteLine(TITLE + "\n");
-                Console.WriteLine(PAD + "Enter the name of the file that contains your tasks:");
+                Console.WriteLine(PAD + "Enter the full name of the file that contains your tasks:");
                 Console.Write("Name:");
                 TaskFunctions.s_fileName = Console.ReadLine();
 
@@ -53,7 +53,7 @@ namespace ProjectManagementSystem
                 {
                     tasksText = File.ReadAllLines(TaskFunctions.s_fileName);
                 }
-                catch (FileNotFoundException)
+                catch
                 {
                     Console.WriteLine("Could not find a file with that name.\nThis path is relative to :\n\t" + Directory.GetCurrentDirectory() + "\nPress any key to continue\n...");
                     Console.ReadKey();
@@ -102,7 +102,7 @@ namespace ProjectManagementSystem
                             }
                             if (boolChoice == 'y')
                             {
-                                // SAVE HERE
+                                TaskFunctions.Save();
                             }
                             else if (!new char[] { 'y', 'n' }.Contains(boolChoice))
                             {
@@ -161,11 +161,21 @@ namespace ProjectManagementSystem
 
                     case (int)Choice.SEQUENCE:
                         List<Task> topOrdering = TaskFunctions.Sequence();
-                        Console.WriteLine($"Sequence: [ { String.Join(", ", topOrdering)} ]\n ... has been saved to Sequence.txt\nPress any key to continue\n...");
+                        string topOrderingString = String.Join(",", topOrdering.Select(x => x.ID));
+                        File.WriteAllText("Sequence.txt", topOrderingString);
+
+                        Console.WriteLine($"Sequence: [ {topOrderingString} ]\n ... has been saved to Sequence.txt\nPress any key to continue\n...");
                         Console.ReadKey();
                         break;
 
                     case (int)Choice.EARLIESTTIMES:
+                        TaskFunctions.EarliestTimes();
+                        Console.WriteLine("-------- Earliest Times --------");
+                        TaskFunctions.Tasks.ForEach(x => Console.Write($"{x.ID}, {x.NStart}\n"));
+                        Console.WriteLine("--------------------------------");
+                        Console.WriteLine($"Earliest times have been saved to EarliestTimes.txt\nPress any key to continue\n...");
+                        Console.ReadKey();
+                        TaskFunctions.EarliestTimes();
 
                         break;
                     default:

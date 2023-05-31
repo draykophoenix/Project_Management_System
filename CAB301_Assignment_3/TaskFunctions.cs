@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,7 +18,7 @@ namespace ProjectManagementSystem
 
         public static void LoadTasks(string[] tasksText)
         {
-            string[][] taskItemsArray = (from taskString in tasksText select taskString.Split(new[] { ',' }, 3)).ToArray();
+            string[][] taskItemsArray = tasksText.Select(taskString => taskString.Split(new[] { ',' }, 3)).ToArray();
 
             // First loop - init all tasks
             foreach (string[] taskItems in taskItemsArray)
@@ -33,16 +37,16 @@ namespace ProjectManagementSystem
 
                 // Getting dependencies from text to obj
                 HashSet<Task> dependencies = new HashSet<Task>();
-                if (taskItemsArray[i].Length == 3) // If the task has dependencies
-                {
-                    string[] dependenciesString = taskItemsArray[i][2].Split(",");
 
-                    foreach (string dependencyID in dependenciesString)
-                    {
-                        s_taskDict.TryGetValue(dependencyID.Trim(), out Task dependency);
-                        dependencies.Add(dependency);
-                    }
+                string[] dependenciesString = taskItemsArray[i][2].Split(",");
+
+                foreach (string dependencyID in dependenciesString)
+                {
+                    s_taskDict.TryGetValue(dependencyID.Trim(), out Task dependency);
+                    dependencies.Add(dependency);
                 }
+                
+                dependencies.Remove(null);
                 task.Update(timeToCompletion, dependencies);
             }
         }
@@ -86,21 +90,50 @@ namespace ProjectManagementSystem
         }
         public static void Save()
         {
-            string[] taskStrings = (from task in Tasks select task.FormatFileString()).ToArray();
+            string[] taskStrings = Tasks.Select(task => task.FormatFileString()).ToArray();
             File.WriteAllLines(s_fileName, taskStrings);
         }
         public static List<Task> Sequence()
         {
             List<Task> topOrdering = new List<Task>();
 
-            List<Task> sCopyTasks = new List<Task>(Tasks);
-            while (sCopyTasks.Count != 0)
+            var reversedTaskDict = s_taskDict.ToDictionary(x => x.Value, x => x.Key);
+
+            Dictionary<Task, HashSet<string>> tasksClone = Tasks.ToDictionary(x => x, x => new HashSet<string>(x.HasDependencies ? x.FormatDependenciesString().Split(',') : new string[0]));
+
+            while (tasksClone.Count != 0)
             {
-                Task v = (from freeTask in sCopyTasks where !freeTask.HasDependencies select freeTask).First();
+                Task v = tasksClone.Keys.ToList().Find(x => tasksClone.GetValueOrDefault(x).Count == 0);
                 topOrdering.Add(v);
-                DeleteTask(sCopyTasks, v);
+
+                tasksClone.Remove(v);
+                foreach (HashSet<string> dependencySet in tasksClone.Values)
+                {
+                    dependencySet.Remove(v.ID);
+                }
             }
             return topOrdering;
+        }
+        public static void EarliestTimes()
+        {
+            List<Task> topOrdering = Sequence();
+            topOrdering.ForEach(x => x.ClearNetwork());
+
+            foreach (Task node in topOrdering)
+            {
+                if (!node.HasDependencies)
+                {
+                    node.NStart = 0;
+                    node.NFinish = node.TimeToCompletion;
+                } 
+                else
+                {
+                    uint maxFinish = node.Dependencies.Max(x => x.NFinish);
+
+                    node.NStart = maxFinish;
+                    node.NFinish = node.NStart + node.TimeToCompletion;
+                }
+            }
         }
     }
 }

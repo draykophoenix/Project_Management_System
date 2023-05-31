@@ -7,51 +7,61 @@ namespace ProjectManagementSystem
     internal class Task
     {
         public string ID { get; private set; }
-        private uint _timeToCompletion;
-        private HashSet<Task>? _dependencies;
+        public uint TimeToCompletion { get; private set; }
+        public HashSet<Task>? Dependencies { get; private set; }
+
+        public uint NStart = 0;
+        public uint NFinish = 0;
 
         public bool HasDependencies
         {
             get
             {
-                return _dependencies.Count > 0;
+                return Dependencies.Count > 0;
             }
         }
 
         public Task(string id)
         {
             ID = id;
-            _timeToCompletion = uint.MaxValue;
+            TimeToCompletion = uint.MaxValue;
         }
         public Task(string id, uint timeToCompletion, HashSet<Task> dependencies)
         {
             ID = id;
-            _timeToCompletion = timeToCompletion;
-            _dependencies = dependencies;
+            TimeToCompletion = timeToCompletion;
+            Dependencies = dependencies;
         }
         public void Update(uint timeToCompletion, HashSet<Task> dependencies)
         {
-            _timeToCompletion = timeToCompletion;
-            _dependencies = dependencies;
+            TimeToCompletion = timeToCompletion;
+            Dependencies = dependencies;
         }
         public void DeleteDependency(Task taskToDelete)
         {
-            _dependencies.Remove(taskToDelete);
+            Dependencies.Remove(taskToDelete);
         }
         public void ChangeTime(uint newTime)
         {
-            _timeToCompletion = newTime;
+            TimeToCompletion = newTime;
         }
         public string FormatFileString()
         {
-            var ids = from dependency in _dependencies select dependency.ID;
-            return $"{ID}, {_timeToCompletion}, {String.Join(", ", ids)}";
+            return $"{ID}, {TimeToCompletion}, {String.Join(", ", Dependencies.Select(x => x.ID))}";
+        }
+        public string FormatDependenciesString()
+        {
+            return String.Join(',', Dependencies.Select(x => x.ID));
+        }
+        public void ClearNetwork()
+        {
+            NStart = 0;
+            NFinish = 0;
         }
 
         public override string ToString()
         {
-            var ids = from dependency in _dependencies select dependency.ID;
-            return $"| ID: {ID} Time: ({_timeToCompletion})\n|\tDependencies: {String.Join(", ", ids)}";
+            return $"| ID: {ID} Time: ({TimeToCompletion})\n|\tDependencies: {String.Join(", ", Dependencies.Select(x => x.ID))}";
         }
     }
 }
