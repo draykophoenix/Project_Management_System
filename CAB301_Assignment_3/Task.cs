@@ -30,12 +30,16 @@ namespace ProjectManagementSystem
         {
             _dependencies.Remove(taskToDelete);
         }
+        public void ChangeTime(uint newTime)
+        {
+            _timeToCompletion = newTime;
+        }
 
         public override string ToString()
         {
             var ids = from dependency in _dependencies select dependency.ID;
             string dependencyIds = String.Join(", ", ids);
-            return $"ID: {ID} Time: ({_timeToCompletion})\n\tDependencies: {dependencyIds}";
+            return $"| ID: {ID} Time: ({_timeToCompletion})\n|\tDependencies: {dependencyIds}";
         }
     }
 }
