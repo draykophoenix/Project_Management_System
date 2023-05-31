@@ -34,12 +34,16 @@ namespace ProjectManagementSystem
         {
             _timeToCompletion = newTime;
         }
+        public string FormatFileString()
+        {
+            var ids = from dependency in _dependencies select dependency.ID;
+            return $"{ID}, {_timeToCompletion}, {String.Join(", ", ids)}";
+        }
 
         public override string ToString()
         {
             var ids = from dependency in _dependencies select dependency.ID;
-            string dependencyIds = String.Join(", ", ids);
-            return $"| ID: {ID} Time: ({_timeToCompletion})\n|\tDependencies: {dependencyIds}";
+            return $"| ID: {ID} Time: ({_timeToCompletion})\n|\tDependencies: {String.Join(", ", ids)}";
         }
     }
 }

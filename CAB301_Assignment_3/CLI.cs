@@ -18,18 +18,18 @@ namespace ProjectManagementSystem
             SEQUENCE,
             EARLIESTTIMES
         };
-        private const string TITLE = "================ Project Management System ================\n";
+        private const string TITLE = "================ Project Management System ================";
         private const string PAD = "> ";
+        private static string? fileName = "";
+        private static bool isChanged = false;
         public static void IncorrectInput()
         {
-            Console.WriteLine(" ~ The provided input was of the incorrect type ~ \n ~  Press any key to return to the home screen  ~ ");
+            Console.WriteLine(" ~ The provided input was of the incorrect type ~ \n ~  Press any key to return to the home screen  ~ \n...");
             Console.ReadKey();
             Console.Clear();
         }
-        public static void LoadTasks(string fileName)
+        public static void LoadTasks(string[] tasksText)
         {
-            string[] tasksText = File.ReadAllLines(@"C:\Users\drayk\source\repos\Project_Management_System\CAB301_Assignment_3\Tasks.txt"); // {|!|}
-
             string[][] taskItemsArray = (from taskString in tasksText select taskString.Split(new[] { ',' }, 3)).ToArray();
 
             // First loop - init all tasks
@@ -66,6 +66,7 @@ namespace ProjectManagementSystem
         {
             Console.Clear();
             Console.WriteLine(TITLE);
+            Console.WriteLine($"== File: {fileName}{(isChanged? "*" : "")}\n");
             Console.WriteLine("------------ Tasks ------------>");
             _tasks.ForEach(Console.WriteLine);
             Console.WriteLine("------------------------------->");
@@ -131,6 +132,11 @@ namespace ProjectManagementSystem
             _taskDict.TryGetValue(id.Trim(), out Task task);
             task.ChangeTime(newTime);
         }
+        public static void Save()
+        {
+            string[] taskStrings = (from task in _tasks select task.FormatFileString()).ToArray();
+            File.WriteAllLines(fileName, taskStrings);
+        }
 
         public static void Main()
         {
@@ -138,18 +144,34 @@ namespace ProjectManagementSystem
             Ask the user to enter the name of a text file in which the information about the tasks in
             a project and the dependencies among the tasks are stored ...
             */
-            Console.WriteLine(TITLE);
-            Console.WriteLine(PAD + "Enter the file name containing your tasks{|!|}:");
-            Console.Write("Name:");
-            string? fileName = Console.ReadLine();
+
+            string[]? tasksText = null;
+
+            while (tasksText is null)
+            {
+                Console.Clear();
+                Console.WriteLine(TITLE + "\n");
+                Console.WriteLine(PAD + "Enter the name of the file that contains your tasks:");
+                Console.Write("Name:");
+                fileName = Console.ReadLine();
+
+                try
+                {
+                    tasksText = File.ReadAllLines(fileName);
+                }
+                catch (FileNotFoundException)
+                {
+                    Console.WriteLine("Could not find a file with that name.\nThis path is relative to :\n\t" + Directory.GetCurrentDirectory() + "\nPress any key to continue\n...");
+                    Console.ReadKey();
+                }
+            }
 
             /*
             and read the information
             from the text file into the system.
             */
-            LoadTasks(fileName);
+            LoadTasks(tasksText);
 
-            bool isChanged = false;
             while (true)
             {
                 ListTasks();
@@ -215,7 +237,11 @@ namespace ProjectManagementSystem
                         break;
 
                     case (int)Choice.SAVE:
+                        ListTasks();
+                        Save();
                         isChanged = false;
+                        Console.WriteLine("Task saved successfully\nPress any key to continue\n...");
+                        Console.ReadKey();
                         break;
 
                     case (int)Choice.SEQUENCE:
