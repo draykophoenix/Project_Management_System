@@ -10,6 +10,14 @@ namespace ProjectManagementSystem
         private uint _timeToCompletion;
         private HashSet<Task>? _dependencies;
 
+        public bool HasDependencies
+        {
+            get
+            {
+                return _dependencies.Count > 0;
+            }
+        }
+
         public Task(string id)
         {
             ID = id;

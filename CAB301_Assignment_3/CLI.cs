@@ -104,21 +104,22 @@ namespace ProjectManagementSystem
             Console.Write("ID:");
             string? idToDelete = Console.ReadLine();
 
-            Task taskToDelete = null;
+            _taskDict.TryGetValue(idToDelete.Trim(), out Task taskToDelete);
+
             foreach (Task task in _tasks)
             {
-                if (task.ID == idToDelete)
-                {
-                    taskToDelete = task;
-                }
-                else
-                {
-                    _taskDict.TryGetValue(idToDelete.Trim(), out Task dependencyToDelete);
-                    task.DeleteDependency(dependencyToDelete);
-                }
+                task.DeleteDependency(taskToDelete);
             }
             _tasks.Remove(taskToDelete);
             _taskDict.Remove(idToDelete);
+        }
+        public static void DeleteTask(List<Task> tasks, Task taskToDelete)
+        {
+            foreach (Task task in tasks)
+            {
+                task.DeleteDependency(taskToDelete);
+            }
+            tasks.Remove(taskToDelete);
         }
         public static void ChangeTime()
         {
@@ -136,6 +137,19 @@ namespace ProjectManagementSystem
         {
             string[] taskStrings = (from task in _tasks select task.FormatFileString()).ToArray();
             File.WriteAllLines(fileName, taskStrings);
+        }
+        public static List<Task> Sequence()
+        {
+            List<Task> topOrdering = new List<Task>();
+
+            List<Task> sCopyTasks = new List<Task>(_tasks);
+            while (sCopyTasks.Count != 0)
+            {
+                Task v = (from freeTask in sCopyTasks where !freeTask.HasDependencies select freeTask).First();
+                topOrdering.Add(v);
+                DeleteTask(sCopyTasks, v);
+            }
+            return topOrdering;
         }
 
         public static void Main()
@@ -191,6 +205,8 @@ namespace ProjectManagementSystem
                     continue;
                 }
 
+                ListTasks();
+
                 switch (choice)
                 {
                     case (int)Choice.EXIT:
@@ -219,25 +235,21 @@ namespace ProjectManagementSystem
                         break;
 
                     case (int)Choice.ADD:
-                        ListTasks();
                         AddTask();
                         isChanged = true;
                         break;
 
                     case (int)Choice.DELETE:
-                        ListTasks();
                         DeleteTask();
                         isChanged = true;
                         break;
 
                     case (int)Choice.CHANGETIME:
-                        ListTasks();
                         ChangeTime();
                         isChanged = true;
                         break;
 
                     case (int)Choice.SAVE:
-                        ListTasks();
                         Save();
                         isChanged = false;
                         Console.WriteLine("Task saved successfully\nPress any key to continue\n...");
@@ -245,7 +257,9 @@ namespace ProjectManagementSystem
                         break;
 
                     case (int)Choice.SEQUENCE:
-
+                        List<Task> topOrdering = Sequence();
+                        Console.WriteLine($"Sequence: [ { String.Join(", ", topOrdering)} ]\n ... has been saved to Sequence.txt");
+                        
                         break;
 
                     case (int)Choice.EARLIESTTIMES:
