@@ -1,31 +1,41 @@
 ﻿
+using System.Collections.Generic;
+using System;
+
 namespace ProjectManagementSystem
 {
     internal class Task
     {
         public string ID { get; private set; }
         private uint _timeToCompletion;
-        private Task[]? _dependencies;
+        private HashSet<Task>? _dependencies;
 
         public Task(string id)
         {
             ID = id;
             _timeToCompletion = uint.MaxValue;
         }
-        public void Update(uint timeToCompletion, Task[] dependencies)
+        public Task(string id, uint timeToCompletion, HashSet<Task> dependencies)
+        {
+            ID = id;
+            _timeToCompletion = timeToCompletion;
+            _dependencies = dependencies;
+        }
+        public void Update(uint timeToCompletion, HashSet<Task> dependencies)
         {
             _timeToCompletion = timeToCompletion;
             _dependencies = dependencies;
         }
-
-        /*
-         Add a new task with time needed to complete the task and other tasks that the task
-         depends on into the project.
-        */
+        public void DeleteDependency(Task taskToDelete)
+        {
+            _dependencies.Remove(taskToDelete);
+        }
 
         public override string ToString()
         {
-            return $"{ID} ({_timeToCompletion})";
+            var ids = from dependency in _dependencies select dependency.ID;
+            string dependencyIds = String.Join(", ", ids);
+            return $"ID: {ID} Time: ({_timeToCompletion})\n\tDependencies: {dependencyIds}";
         }
     }
 }
