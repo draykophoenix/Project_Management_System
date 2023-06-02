@@ -22,7 +22,7 @@ namespace ProjectManagementSystem
         private static bool s_isChanged = false;
         public static void IncorrectInput()
         {
-            Console.WriteLine(" ~ The provided input was of the incorrect type ~ \n ~  Press any key to return to the home screen  ~ \n...");
+            Console.WriteLine(" ~ The provided input was of the incorrect type.\n ~ Press any key to return to the home screen \n...");
             Console.ReadKey();
             Console.Clear();
         }
@@ -55,7 +55,7 @@ namespace ProjectManagementSystem
                 }
                 catch
                 {
-                    Console.WriteLine("Could not find a file with that name.\nThis path is relative to :\n\t" + Directory.GetCurrentDirectory() + "\nPress any key to continue\n...");
+                    Console.WriteLine(" ~ Could not find a file with that name.\n ~ This path is relative to:\n\t" + Directory.GetCurrentDirectory() + "\n ~ Press any key to continue\n...");
                     Console.ReadKey();
                 }
             }
@@ -121,13 +121,17 @@ namespace ProjectManagementSystem
 
                         Console.WriteLine(PAD + "How long does it take to complete this task?");
                         Console.Write("Time:");
-                        uint timeToCompletion = uint.Parse(Console.ReadLine());
+                        if (!uint.TryParse(Console.ReadLine(), out uint timeToCompletion))
+                        {
+                            IncorrectInput();
+                            break;
+                        }
 
                         Console.WriteLine(PAD + "List the tasks that would need to be completed before you can start this task.\nEnter each task ID seperated by a comma (',') ");
                         Console.Write("Tasks:");
                         string[] dependenciesIDs = Console.ReadLine().Split(',');
 
-                        TaskFunctions.AddTask(idToAdd, timeToCompletion, dependenciesIDs);
+                        TaskFunctions.AddTask(idToAdd, timeToCompletion, (dependenciesIDs[0] == " " ? dependenciesIDs : null));
                         s_isChanged = true;
                         break;
 
@@ -146,7 +150,11 @@ namespace ProjectManagementSystem
                         string? idToChange = Console.ReadLine();
                         Console.WriteLine(PAD + "What is the new time to complete this task?");
                         Console.Write("Time:");
-                        uint newTime = uint.Parse(Console.ReadLine());
+                        if (!uint.TryParse(Console.ReadLine(), out uint newTime))
+                        {
+                            IncorrectInput();
+                            break;
+                        }
 
                         TaskFunctions.ChangeTime(idToChange, newTime);
                         s_isChanged = true;
@@ -160,19 +168,33 @@ namespace ProjectManagementSystem
                         break;
 
                     case (int)Choice.SEQUENCE:
-                        List<Task> topOrdering = TaskFunctions.Sequence();
-                        string topOrderingString = String.Join(",", topOrdering.Select(x => x.ID));
+                        List<Task>? sequence = TaskFunctions.Sequence();
+                        if (sequence is null)
+                        {
+                            continue;
+                        }
+                        string topOrderingString = String.Join(",", sequence.Select(x => x.ID));
                         File.WriteAllText("Sequence.txt", topOrderingString);
 
-                        Console.WriteLine($"Sequence: [ {topOrderingString} ]\n ... has been saved to Sequence.txt\nPress any key to continue\n...");
+                        Console.WriteLine($"Sequence: [ {topOrderingString} ]\n\thas been saved to Sequence.txt\nPress any key to continue\n...");
                         Console.ReadKey();
                         break;
 
                     case (int)Choice.EARLIESTTIMES:
-                        TaskFunctions.EarliestTimes();
+                        try
+                        {
+                            TaskFunctions.EarliestTimes();
+                        }
+                        catch
+                        {
+                            break;
+                        }
                         Console.WriteLine("-------- Earliest Times --------");
-                        TaskFunctions.Tasks.ForEach(x => Console.Write($"{x.ID}, {x.NStart}\n"));
+                        List<string> earliestTimes = new List<string>();
+                        TaskFunctions.Tasks.ForEach(x => earliestTimes.Add($"{x.ID}, {x.NStart}"));
+                        Console.WriteLine(String.Join('\n', earliestTimes));
                         Console.WriteLine("--------------------------------");
+                        File.WriteAllLines("EarliestTimes.txt", earliestTimes);
                         Console.WriteLine($"Earliest times have been saved to EarliestTimes.txt\nPress any key to continue\n...");
                         Console.ReadKey();
                         TaskFunctions.EarliestTimes();
